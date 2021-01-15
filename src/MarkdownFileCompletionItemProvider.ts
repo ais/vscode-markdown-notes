@@ -7,8 +7,9 @@ import { BibTeXCitations } from './BibTeXCitations';
 class MarkdownFileCompletionItem extends vscode.CompletionItem {
   fsPath?: string;
 
-  constructor(label: string, kind?: vscode.CompletionItemKind, fsPath?: string) {
+  constructor(label: string, kind?: vscode.CompletionItemKind, insertText?: string, fsPath?: string) {
     super(label, kind);
+    this.insertText = insertText;
     this.fsPath = fsPath;
   }
 }
@@ -43,8 +44,9 @@ export class MarkdownFileCompletionItemProvider implements vscode.CompletionItem
       case RefType.WikiLink:
         return (await NoteWorkspace.noteFiles()).map((f) => {
           let kind = vscode.CompletionItemKind.File;
-          let label = NoteWorkspace.wikiLinkCompletionForConvention(f, document);
-          let item = new MarkdownFileCompletionItem(label, kind, f.fsPath);
+          let label = NoteParser.parsedFileFor(f.fsPath).title?.text;
+          let insertText = NoteWorkspace.wikiLinkCompletionForConvention(f, document);
+          let item = new MarkdownFileCompletionItem(label ?? insertText, kind, insertText, f.fsPath);
           if (ref && ref.range) {
             item.range = ref.range;
           }
